@@ -137,31 +137,33 @@ fun NetworkCard(network: ScanResult) {
                 .fillMaxWidth()
         ) {
             Text(
-                text = network.SSID,
+                text = "SSID: ${network.wifiSsid.toString()}",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text("BSSID: ${network.BSSID}")
+            Text("BSSID : ${network.BSSID}")
             Text("Frequency: ${network.frequency} MHz")
             Text("Channel: ${getChannelForFrequency(network.frequency)}")
             Text("Band: ${if (network.frequency > 5000) "5 GHz" else "2.4 GHz"}")
             Text("Signal Strength: ${network.level} dBm")
             Text("Capabilities: ${network.capabilities}")
-
+            Text("Strength: ${network.level}")
 
             SignalStrengthBar(signalStrength = network.level)
         }
     }
 }
 
+
 @Composable
 fun SignalStrengthBar(signalStrength: Int) {
     val normalizedStrength = normalizeSignalStrength(signalStrength)
     val barColor = when {
-        normalizedStrength > 0.7 -> Color.Green
-        normalizedStrength > 0.4 -> Color.Yellow
-        else -> Color.Red
+        signalStrength > -50 -> Color.Green // Excellent signal
+        signalStrength > -60 -> Color.Yellow // Good signal
+        signalStrength > -75 -> Color.Magenta // Fair signal
+        else -> Color.Red // Poor signal
     }
 
     Column(modifier = Modifier.padding(top = 8.dp)) {
@@ -183,10 +185,10 @@ fun SignalStrengthBar(signalStrength: Int) {
 }
 
 fun normalizeSignalStrength(signalStrength: Int): Float {
-    // Normalize signal strength from dBm to a value between 0 and 1
-    // Typical values: -100 dBm (very weak) to -50 dBm (very strong)
-    return (signalStrength + 100) / 50f.coerceIn(0f, 1f)
+    // Normalize signal strength from dBm (e.g., -100 dBm to -30 dBm) to a value between 0 and 1
+    return ((signalStrength + 100) / 70f).coerceIn(0f, 1f)
 }
+
 
 fun getChannelForFrequency(frequency: Int): Int {
     return when {
